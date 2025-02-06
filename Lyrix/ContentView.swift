@@ -3,52 +3,34 @@ import SwiftUI
 struct ContentView: View {
     @State private var searchText = ""
     @State private var isSearching = false
-    @State private var showHistory = false
-    @State private var currentLogoColorIndex = 0 // Track current color
+    @State private var logoColorIndex = 0
+    @State private var searchResults: [Track] = []
     
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
                 // Logo
-                Text("Lyrix")
-                    .font(ThemeManager.logoFont(size: isSearching ? ThemeManager.logoFontSizeSmall : ThemeManager.logoFontSizeLarge))
-                    .foregroundColor(ThemeManager.logoColors[currentLogoColorIndex])
-                    .padding(.top, isSearching ? UIScreen.main.bounds.height * 0.01 : UIScreen.main.bounds.height * 0.1)
-                    .animation(.spring(duration: 0.3), value: isSearching)
-                    .onTapGesture {
-                        withAnimation(.spring(duration: 0.3)) {
-                            // Cycle to next color
-                            currentLogoColorIndex = (currentLogoColorIndex + 1) % ThemeManager.logoColors.count
-                        }
-                    }
-                
+                LogoView(colorIndex: $logoColorIndex)
+                    .padding(.top, isSearching ? 10 : 80)
+                    .animation(.spring(duration: 0.9), value: isSearching)
+
                 // Search Bar
-                SearchBarView(
-                    searchText: $searchText,
-                    isSearching: $isSearching
-                )
-                .padding(.top, isSearching ? UIScreen.main.bounds.height * 0.01 : UIScreen.main.bounds.height * 0.1)
-                .onChange(of: isSearching) { _, newValue in
-                    if newValue {
-                        // Delay showing history
-                        withAnimation(.easeInOut(duration: 0.3).delay(0.2)) {
-                            showHistory = true
-                        }
-                    } else {
-                        showHistory = false
-                    }
-                }
+                SearchBarView(searchText: $searchText, isSearching: $isSearching, searchResults: $searchResults)
+                    .padding(.top, isSearching ? 10 : 70)
                 
                 if isSearching {
-                    // History section
-                    SearchHistoryView()
-                        .opacity(showHistory ? 1 : 0)
-                        .transition(.opacity)
+                    List(searchResults, id: \.id) { track in
+                        NavigationLink(destination: TrackDetailView(track: track)) {
+                            TrackRowView(track: track)
+                        }
+                        .listRowSeparator(.hidden)
+                    }
+                    .listStyle(PlainListStyle())
                 }
                 
                 Spacer()
             }
-            .animation(.spring(duration: 0.3), value: isSearching)
+            .animation(.spring(duration: 0.5), value: isSearching)
             .background(ThemeManager.backgroundColor)
         }
         .preferredColorScheme(.dark)

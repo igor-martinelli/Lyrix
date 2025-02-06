@@ -29,9 +29,22 @@
 		7842ECB12D16C9C5000D240B /* LyrixUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LyrixUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		78A3C0F62D53BB69003542C1 /* Exceptions for "Lyrix" folder in "Lyrix" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 7842EC962D16C9C3000D240B /* Lyrix */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		7842EC992D16C9C3000D240B /* Lyrix */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				78A3C0F62D53BB69003542C1 /* Exceptions for "Lyrix" folder in "Lyrix" target */,
+			);
 			path = Lyrix;
 			sourceTree = "<group>";
 		};

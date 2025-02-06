@@ -1,13 +1,18 @@
+
 import SwiftUI
 
 struct SearchBarView: View {
     @Binding var searchText: String
     @Binding var isSearching: Bool
+    @Binding var searchResults: [Track]
     @FocusState private var isFocused: Bool
+    let apiManager = APIManager()
+    @State private var selectedTrack: Track?  // Store selected track
+
     
     var body: some View {
         Button(action: {
-            withAnimation(.spring(duration: 0.3)) {
+            withAnimation(.spring(duration: 0.5)) {
                 isSearching = true
                 isFocused = true
             }
@@ -21,14 +26,36 @@ struct SearchBarView: View {
                     .textInputAutocapitalization(.never)
                     .focused($isFocused)
                     .submitLabel(.search)
+                    .autocorrectionDisabled(true)
                     .allowsHitTesting(isSearching)
+                    .onChange(of: searchText) { oldValue, newValue in
+                        if newValue.isEmpty {
+                            searchResults = []
+                        } else {
+                            let currentSearchText = newValue
+                            Task {
+                                let results = await apiManager.searchTracks(query:currentSearchText)
+                                if searchText == currentSearchText {
+                                    searchResults = results
+                                }
+                            }
+                        }
+                    }
+                    .onChange(of: isSearching) { oldValue, newValue in
+                        if newValue {
+                            print("User started searching!")
+                        } else {
+                            searchText = ""
+                        }
+                    }
                 
                 if isSearching {
                     Button(action: {
-                        withAnimation(.spring(duration: 0.3)) {
+                        searchResults = []
+                        withAnimation(.spring(duration: 0.15)) {
                             isSearching = false
-                            searchText = ""
                             isFocused = false
+
                         }
                     }) {
                         Text("Cancel")
@@ -37,6 +64,7 @@ struct SearchBarView: View {
                     }
                     .transition(.move(edge: .trailing))
                 }
+
             }
             .padding(15)
             .background(Color(.systemGray6))
@@ -44,5 +72,6 @@ struct SearchBarView: View {
             .padding(.horizontal)
         }
         .buttonStyle(.plain)
+        .animation(.spring(duration: 0.5), value: isSearching)
     }
-} 
+}

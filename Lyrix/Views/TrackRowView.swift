@@ -5,13 +5,15 @@ struct TrackRowView: View {
 
     var body: some View {
         HStack {
-            AsyncImage(url: URL(string: track.imageUrl)) { image in
-                image.resizable()
-            } placeholder: {
+            if let url = URL(string: track.imageUrl) {
+                CachedAsyncImage(url: url)
+                    .frame(width: 50, height: 50)
+                    .cornerRadius(8)
+            } else {
                 Color.gray
+                    .frame(width: 50, height: 50)
+                    .cornerRadius(8)
             }
-            .frame(width: 50, height: 50)
-            .cornerRadius(8)
 
             VStack(alignment: .leading) {
                 Text(track.title)

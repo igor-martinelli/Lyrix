@@ -12,13 +12,14 @@ struct TrackDetailView: View {
     
     var body: some View {
         VStack {
-            AsyncImage(url: URL(string: track.imageUrl)) { image in
-                image.resizable()
-                     .scaledToFit()
-                     .frame(width: 250, height: 250)
-                     .clipShape(RoundedRectangle(cornerRadius: 20))
-            } placeholder: {
+            if let url = URL(string: track.imageUrl) {
+                CachedAsyncImage(url: url)
+                    .frame(width: 250, height: 250)
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
+            } else {
                 ProgressView()
+                    .frame(width: 250, height: 250)
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
             }
             
             Text(track.title)

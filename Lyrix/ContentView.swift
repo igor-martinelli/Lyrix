@@ -24,7 +24,7 @@ struct ContentView: View {
                     .onChange(of: isSearching) { oldValue, newValue in
                         if newValue {
                             showHistory = false
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4 - 0.2) {
                                 showHistory = true
                             }
                         } else {

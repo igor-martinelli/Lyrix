@@ -1,5 +1,4 @@
 import SwiftUI
-
 struct ContentView: View {
     @State private var searchText = ""
     @State private var isSearching = false
@@ -9,6 +8,11 @@ struct ContentView: View {
     @State private var searchHistory: [Track] = []
     @State private var selectedTrack: Track?
     @State private var navigateToDetail = false
+    @State private var showSettings = false
+
+    init() {
+        _searchHistory = State(initialValue: HistoryStorage.shared.loadHistory())
+    }
 
     var body: some View {
         NavigationStack {
@@ -102,6 +106,17 @@ struct ContentView: View {
                     TrackDetailView(track: track)
                 }
             }
+            .navigationDestination(isPresented: $showSettings) {
+                SettingsView(
+                    showSettings: $showSettings, 
+                    searchHistory: $searchHistory)
+            }
+            .navigationBarItems(trailing: Button(action: {
+                showSettings.toggle()
+            }) {
+                Image(systemName: "gearshape")
+            }).foregroundColor(ThemeManager.logoColors[logoColorIndex])
+
         }
         .preferredColorScheme(.dark)
     }
@@ -122,14 +137,20 @@ struct ContentView: View {
                 searchHistory.removeLast()
             }
         }
+        // Save history after modification
+        HistoryStorage.shared.saveHistory(searchHistory)
     }
 
     func removeFromSearchHistory(_ track: Track) {
         searchHistory.removeAll { $0.id == track.id }
+        // Save history after modification
+        HistoryStorage.shared.saveHistory(searchHistory)
     }
 
     func deleteHistoryItem(at offsets: IndexSet) {
         searchHistory.remove(atOffsets: offsets)
+        // Save history after modification
+        HistoryStorage.shared.saveHistory(searchHistory)
     }
 }
 

@@ -2,13 +2,56 @@ import SwiftUI
 
 class ImageCache {
     static let shared = NSCache<NSURL, UIImage>()
+    static let fileManager = FileManager.default
+    static let cacheDirectory: URL = {
+        let urls = fileManager.urls(for: .cachesDirectory, in: .userDomainMask)
+        return urls[0].appendingPathComponent("ImageCache")
+    }()
 
     static func getImage(for url: URL) -> UIImage? {
-        return shared.object(forKey: url as NSURL)
+        if let cachedImage = shared.object(forKey: url as NSURL) {
+            return cachedImage
+        } else if let diskImage = loadImageFromDisk(for: url) {
+            shared.setObject(diskImage, forKey: url as NSURL)
+            return diskImage
+        }
+        return nil
     }
 
     static func setImage(_ image: UIImage, for url: URL) {
         shared.setObject(image, forKey: url as NSURL)
+        saveImageToDisk(image, for: url)
+    }
+
+    private static func loadImageFromDisk(for url: URL) -> UIImage? {
+        let fileURL = cacheDirectory.appendingPathComponent(url.lastPathComponent)
+        if let data = try? Data(contentsOf: fileURL), let image = UIImage(data: data) {
+            return image
+        }
+        return nil
+    }
+
+    private static func saveImageToDisk(_ image: UIImage, for url: URL) {
+        let fileURL = cacheDirectory.appendingPathComponent(url.lastPathComponent)
+        if !fileManager.fileExists(atPath: cacheDirectory.path) {
+            try? fileManager.createDirectory(at: cacheDirectory, withIntermediateDirectories: true, attributes: nil)
+        }
+        if let data = image.pngData() {
+            try? data.write(to: fileURL)
+        }
+    }
+    
+    static func clearCache() {
+        shared.removeAllObjects()
+        
+        do {
+            if fileManager.fileExists(atPath: cacheDirectory.path) {
+                try fileManager.removeItem(at: cacheDirectory)
+                try fileManager.createDirectory(at: cacheDirectory, withIntermediateDirectories: true, attributes: nil)
+            }
+        } catch {
+            print("Error clearing disk cache: \(error.localizedDescription)")
+        }
     }
 }
 

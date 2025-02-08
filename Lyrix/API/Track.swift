@@ -11,4 +11,5 @@ struct Track: Identifiable, Codable {
     let title: String
     let artists: String
     let imageUrl: String
+    let lyrics: [String]
 }

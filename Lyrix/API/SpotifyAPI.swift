@@ -53,7 +53,13 @@ class SpotifyAPI {
             let response = try JSONDecoder().decode(SpotifyResponse.self, from: data)
             return response.tracks.items.map { track in
                 let artistNames = track.artists.map { $0.name }.joined(separator: ", ")
-                return Track(id: track.id, title: track.name, artists: artistNames, imageUrl: track.album.images.first?.url ?? "")
+                return Track(
+                    id: track.id,
+                    title: track.name,
+                    artists: artistNames,
+                    imageUrl: track.album.images.first?.url ?? "",
+                    lyrics: []  // Initialize with empty lyrics array
+                )
             }
         } catch {
             print("Error fetching tracks: \(error)")

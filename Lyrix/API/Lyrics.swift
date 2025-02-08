@@ -1,9 +1,9 @@
 struct Lyrics: Codable {
-    let lyrics: String
+    let plainLyrics: String
     
     // Convert raw lyrics string into an array of lines
     var lines: [String] {
-        lyrics.components(separatedBy: .newlines)
+        plainLyrics.components(separatedBy: .newlines)
             .filter { !$0.isEmpty }  // Remove empty lines
     }
 }

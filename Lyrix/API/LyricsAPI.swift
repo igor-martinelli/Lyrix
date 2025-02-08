@@ -1,20 +1,27 @@
 import Foundation
 
 class LyricsAPI {
-    private let baseURL = "https://api.lyrics.ovh/v1"
+    private let baseURL = "https://lrclib.net/api"
     
-    /// Fetches lyrics for a given artist and title
+    /// Fetches lyrics for a given track
     func fetchLyrics(artist: String, title: String) async throws -> Lyrics? {
         // Get first artist from comma-separated list
-        let firstArtist = artist.split(separator: ",").first?.trimmingCharacters(in: .whitespaces) ?? artist
+        let firstArtist = artist.split(separator: ",")
+            .first?
+            .trimmingCharacters(in: .whitespaces) ?? artist
         
-        // Format artist and title for URL
-        let formattedArtist = firstArtist.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? firstArtist
-        let formattedTitle = title.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? title
+        // Format query parameters
+        let queryItems = [
+            URLQueryItem(name: "artist_name", value: firstArtist),
+            URLQueryItem(name: "track_name", value: title)
+        ]
         
         print("Fetching lyrics for artist: \(firstArtist), title: \(title)")  // Debug print
         
-        guard let url = URL(string: "\(baseURL)/\(formattedArtist)/\(formattedTitle)") else {
+        var urlComponents = URLComponents(string: "\(baseURL)/get")
+        urlComponents?.queryItems = queryItems
+        
+        guard let url = urlComponents?.url else {
             throw LyricsError.invalidURL
         }
         
@@ -27,7 +34,8 @@ class LyricsAPI {
             
             switch httpResponse.statusCode {
             case 200:
-                return try JSONDecoder().decode(Lyrics.self, from: data)
+                let lrcLibResponse = try JSONDecoder().decode(LRCLibResponse.self, from: data)
+                return Lyrics(plainLyrics: lrcLibResponse.plainLyrics)
             case 404:
                 throw LyricsError.lyricsNotFound
             default:
@@ -39,6 +47,17 @@ class LyricsAPI {
             throw LyricsError.networkError(error)
         }
     }
+}
+
+struct LRCLibResponse: Codable {
+    let id: Int
+    let trackName: String
+    let artistName: String
+    let albumName: String?
+    let duration: Int?
+    let instrumental: Bool
+    let plainLyrics: String
+    let syncedLyrics: String?
 }
 
 enum LyricsError: LocalizedError {

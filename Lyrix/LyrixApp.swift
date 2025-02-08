@@ -10,7 +10,6 @@ import SwiftUI
 @main
 struct LyrixApp: App {
     init() {
-        // Set the status bar style to light (white) content
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
             windowScene.windows.first?.overrideUserInterfaceStyle = .dark
         }
@@ -18,7 +17,8 @@ struct LyrixApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            SplashScreenView()
+                .preferredColorScheme(.dark)
         }
     }
 }

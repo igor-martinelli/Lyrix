@@ -40,19 +40,6 @@ class ImageCache {
             try? data.write(to: fileURL)
         }
     }
-    
-    static func clearCache() {
-        shared.removeAllObjects()
-        
-        do {
-            if fileManager.fileExists(atPath: cacheDirectory.path) {
-                try fileManager.removeItem(at: cacheDirectory)
-                try fileManager.createDirectory(at: cacheDirectory, withIntermediateDirectories: true, attributes: nil)
-            }
-        } catch {
-            print("Error clearing disk cache: \(error.localizedDescription)")
-        }
-    }
 }
 
 struct CachedAsyncImage: View {

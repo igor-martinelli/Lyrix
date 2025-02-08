@@ -2,8 +2,6 @@ import SwiftUI
 
 struct SettingsView: View {
     @Binding var showSettings: Bool
-    @State private var showCacheCleared = false
-    @State private var showHistoryCleared = false
     @Binding var searchHistory: [Track]
 
     var body: some View {
@@ -36,10 +34,6 @@ struct SettingsView: View {
                         
                         AnimatedTrashButton {
                             clearCache()
-                            showCacheCleared = true
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                                showCacheCleared = false
-                            }
                         }
                     }
                     .padding(.horizontal)
@@ -60,10 +54,6 @@ struct SettingsView: View {
                         
                         AnimatedTrashButton {
                             clearHistory()
-                            showHistoryCleared = true
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                                showHistoryCleared = false
-                            }
                         }
                     }
                     .padding(.horizontal)
@@ -76,7 +66,9 @@ struct SettingsView: View {
     }
 
     private func clearCache() {
-        ImageCache.clearCache()
+        Task {
+            await CacheManager.shared.clearAllCache()
+        }
     }
     
     private func clearHistory() {

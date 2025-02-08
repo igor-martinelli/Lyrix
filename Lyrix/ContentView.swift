@@ -28,7 +28,7 @@ struct ContentView: View {
                 SearchBarView(searchText: $searchText, isSearching: $isSearching, searchResults: $searchResults)
                     .padding(.top, isSearching ? 10 : 70)
                 
-                // Search Results
+                // Search Results or History
                 if isSearching && !searchText.isEmpty {
                     List(searchResults, id: \.id) { track in
                         Button(action: {
@@ -47,16 +47,19 @@ struct ContentView: View {
                     }
                     .listStyle(PlainListStyle())
                 } else if !isSearching && !searchHistory.isEmpty {
-                    Spacer()
-                    HistoryGridView(
-                        searchHistory: searchHistory,
-                        logoColorIndex: logoColorIndex,
-                        onTrackSelected: navigateToTrack,
-                        onTrackDeleted: removeFromSearchHistory
-                    )
+                    VStack {
+                        Spacer()
+                        HistoryGridView(
+                            searchHistory: searchHistory,
+                            logoColorIndex: logoColorIndex,
+                            onTrackSelected: navigateToTrack,
+                            onTrackDeleted: removeFromSearchHistory
+                        )
+                        Spacer(minLength: 0)  // Push content up
+                    }
                 }
 
-                Spacer()
+                Spacer(minLength: 0)
             }
             .animation(.spring(duration: 0.5), value: isSearching)
             .background(ThemeManager.backgroundColor)

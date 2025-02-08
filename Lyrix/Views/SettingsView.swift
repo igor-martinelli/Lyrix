@@ -6,81 +6,73 @@ struct SettingsView: View {
     @State private var showHistoryCleared = false
     @Binding var searchHistory: [Track]
 
-
     var body: some View {
-        VStack(spacing: 32) {
-            // Cache Button Section
-            VStack(spacing: 8) {
-                Button(action: {
-                    clearCache()
-                    showCacheCleared = true
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                        showCacheCleared = false
+        ZStack {
+            ThemeManager.settingsBackgroundColor
+                .ignoresSafeArea()
+            
+            VStack(alignment: .leading, spacing: 40) {
+                Text("Settings")
+                    .font(.title2)
+                    .fontWeight(.medium)
+                    .foregroundColor(.white)
+                    .padding(.top, 40)
+                    .padding(.horizontal)
+                
+                VStack(alignment: .leading, spacing: 32) {
+                    // Cache Section
+                    HStack {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("Clear cache")
+                                .foregroundColor(.white)
+                                .font(.system(size: 17))
+                            
+                            Text("Clears locally stored files")
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                        }
+                        
+                        Spacer()
+                        
+                        AnimatedTrashButton {
+                            clearCache()
+                            showCacheCleared = true
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                showCacheCleared = false
+                            }
+                        }
                     }
-                }) {
-                    Text("Clear Cache")
-                        .foregroundColor(.red)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(
-                            Capsule()
-                                .stroke(Color.red, lineWidth: 1)
-                        )
+                    .padding(.horizontal)
+                    
+                    // History Section
+                    HStack {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("Clear search history")
+                                .foregroundColor(.white)
+                                .font(.system(size: 17))
+                            
+                            Text("Removes searched tracks")
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                        }
+                        
+                        Spacer()
+                        
+                        AnimatedTrashButton {
+                            clearHistory()
+                            showHistoryCleared = true
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                showHistoryCleared = false
+                            }
+                        }
+                    }
+                    .padding(.horizontal)
                 }
                 
-                Text("Clears locally stored files to free up space")
-                    .font(.caption)
-                    .foregroundColor(.gray)
+                Spacer()
             }
-            .frame(maxWidth: .infinity)
-            
-            // History Button Section
-            VStack(spacing: 8) {
-                Button(action: {
-                    clearHistory()
-                    showHistoryCleared = true
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                        showHistoryCleared = false
-                    }
-                }) {
-                    Text("Clear Search History")
-                        .foregroundColor(.red)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(
-                            Capsule()
-                                .stroke(Color.red, lineWidth: 1)
-                        )
-                }
-                
-                Text("Removes all previously searched tracks")
-                    .font(.caption)
-                    .foregroundColor(.gray)
-            }
-            .frame(maxWidth: .infinity)
-            
-            // Success Messages
-            if showCacheCleared {
-                Text("Cache cleared successfully!")
-                    .foregroundColor(.green)
-                    .transition(.opacity)
-            }
-            
-            if showHistoryCleared {
-                Text("History cleared successfully!")
-                    .foregroundColor(.green)
-                    .transition(.opacity)
-            }
-
-            Spacer()
         }
-        .padding(.top, 20)
-        .padding(.horizontal)
-        .navigationTitle("Settings")
-        .toolbarColorScheme(.dark, for: .navigationBar)
-        .toolbarBackground(.visible, for: .navigationBar)
-        .navigationBarTitleDisplayMode(.inline)
-        .tint(.white)
+        .frame(width: UIScreen.main.bounds.width * 0.8)
     }
 
     private func clearCache() {

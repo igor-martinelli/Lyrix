@@ -1,4 +1,3 @@
-
 import SwiftUI
 
 struct SearchBarView: View {
@@ -48,6 +47,8 @@ struct SearchBarView: View {
                             searchText = ""
                         }
                     }
+                    .foregroundColor(.white)
+                    .accentColor(.white)
                 
                 if isSearching {
                     Button(action: {

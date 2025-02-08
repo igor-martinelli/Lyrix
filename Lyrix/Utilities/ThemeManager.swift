@@ -2,6 +2,7 @@ import SwiftUI
 
 enum ThemeManager {
     static let backgroundColor = Color(.systemBackground)
+    static let settingsBackgroundColor = Color(red: 0.118, green: 0.117, blue: 0.121)  // Change to black
     
     // Font sizes
     static let logoFontSizeLarge: CGFloat = 60

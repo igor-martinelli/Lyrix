@@ -1,4 +1,5 @@
 import SwiftUI
+
 struct ContentView: View {
     @State private var searchText = ""
     @State private var isSearching = false
@@ -9,6 +10,7 @@ struct ContentView: View {
     @State private var selectedTrack: Track?
     @State private var navigateToDetail = false
     @State private var showSettings = false
+    private let presentationManager = SlideInPresentationManager(direction: .right)
 
     init() {
         _searchHistory = State(initialValue: HistoryStorage.shared.loadHistory())
@@ -25,57 +27,6 @@ struct ContentView: View {
                 // Search Bar
                 SearchBarView(searchText: $searchText, isSearching: $isSearching, searchResults: $searchResults)
                     .padding(.top, isSearching ? 10 : 70)
-                    .onChange(of: isSearching) { oldValue, newValue in
-                        if newValue {
-                            showHistory = false
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4 - 0.2) {
-                                showHistory = true
-                            }
-                        } else {
-                            showHistory = false
-                        }
-                    }
-
-                // Search History (Appears with delay)
-                if isSearching && searchText.isEmpty && showHistory {
-                    VStack(alignment: .leading, spacing: 5) {
-                        Text("History")
-                            .font(.headline)
-                            .foregroundColor(.gray)
-                            .padding(.horizontal)
-                            .padding(.top, 5)
-
-                        List {
-                            ForEach(searchHistory, id: \.id) { track in
-                                HStack {
-                                    Button(action: {
-                                        navigateToTrack(track)
-                                    }) {
-                                        HStack {
-                                            TrackRowView(track: track)
-                                            Spacer()
-                                        }
-                                    }
-                                    .buttonStyle(PlainButtonStyle())
-                                    .listRowSeparator(.hidden)
-
-                                    Button(action: {
-                                        removeFromSearchHistory(track)
-                                    }) {
-                                        Image(systemName: "xmark")
-                                            .font(.system(size: 15, weight: .bold, design: .rounded))
-                                            .foregroundColor(.secondary)
-                                    }
-                                    .buttonStyle(BorderlessButtonStyle()) // Prevents full row selection
-                                }
-                                .contentShape(Rectangle()) // Ensures tapable area
-                            }
-                            .onDelete(perform: deleteHistoryItem) // Swipe-to-delete support
-                        }
-                        .listStyle(PlainListStyle())
-                        .transition(.opacity)
-                    }
-                }
                 
                 // Search Results
                 if isSearching && !searchText.isEmpty {
@@ -86,7 +37,7 @@ struct ContentView: View {
                             HStack {
                                 TrackRowView(track: track)
                                 Spacer()
-                                Image(systemName: "chevron.right") // Keeps ">" symbol
+                                Image(systemName: "chevron.right")
                                     .foregroundColor(.gray)
                             }
                             .contentShape(Rectangle())
@@ -95,6 +46,14 @@ struct ContentView: View {
                         .listRowSeparator(.hidden)
                     }
                     .listStyle(PlainListStyle())
+                } else if !isSearching && !searchHistory.isEmpty {
+                    Spacer()
+                    HistoryGridView(
+                        searchHistory: searchHistory,
+                        logoColorIndex: logoColorIndex,
+                        onTrackSelected: navigateToTrack,
+                        onTrackDeleted: removeFromSearchHistory
+                    )
                 }
 
                 Spacer()
@@ -106,37 +65,40 @@ struct ContentView: View {
                     TrackDetailView(track: track)
                 }
             }
-            .navigationDestination(isPresented: $showSettings) {
-                SettingsView(
-                    showSettings: $showSettings, 
-                    searchHistory: $searchHistory)
-            }
             .navigationBarItems(trailing: Button(action: {
-                showSettings.toggle()
+                presentSettings()
             }) {
                 Image(systemName: "gearshape")
             }).foregroundColor(ThemeManager.logoColors[logoColorIndex])
-
         }
         .preferredColorScheme(.dark)
     }
 
     func navigateToTrack(_ track: Track) {
-        addToSearchHistory(track)
+        // First trigger navigation
         selectedTrack = track
         navigateToDetail = true
+        
+        // Delay the history update
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {  // 0.3s delay matches the navigation transition
+            addToSearchHistory(track)
+        }
     }
 
     func addToSearchHistory(_ track: Track) {
+        // Remove if track already exists to avoid duplicates
         if let existingIndex = searchHistory.firstIndex(where: { $0.id == track.id }) {
-            let existingTrack = searchHistory.remove(at: existingIndex)
-            searchHistory.insert(existingTrack, at: 0)
-        } else {
-            searchHistory.insert(track, at: 0)
-            if searchHistory.count > 15 {
-                searchHistory.removeLast()
-            }
+            searchHistory.remove(at: existingIndex)
         }
+        
+        // Add new track at the beginning (FIFO queue)
+        searchHistory.insert(track, at: 0)
+        
+        // Keep only the most recent 8 tracks
+        if searchHistory.count > 8 {
+            searchHistory.removeLast()
+        }
+        
         // Save history after modification
         HistoryStorage.shared.saveHistory(searchHistory)
     }
@@ -147,10 +109,16 @@ struct ContentView: View {
         HistoryStorage.shared.saveHistory(searchHistory)
     }
 
-    func deleteHistoryItem(at offsets: IndexSet) {
-        searchHistory.remove(atOffsets: offsets)
-        // Save history after modification
-        HistoryStorage.shared.saveHistory(searchHistory)
+    private func presentSettings() {
+        let settingsVC = SettingsViewController(searchHistory: $searchHistory)
+        settingsVC.modalPresentationStyle = .custom
+        settingsVC.transitioningDelegate = presentationManager
+        
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let window = windowScene.windows.first,
+           let rootVC = window.rootViewController {
+            rootVC.present(settingsVC, animated: true)
+        }
     }
 }
 

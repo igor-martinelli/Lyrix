@@ -45,6 +45,9 @@ class CacheManager {
         // Clear in-memory image cache
         ImageCache.shared.removeAllObjects()
         
+        // Clear lyrics cache
+        LyricsCache.shared.clearCache()
+        
         // Clear URL cache
         URLCache.shared.removeAllCachedResponses()
         

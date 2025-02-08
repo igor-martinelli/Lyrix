@@ -68,21 +68,41 @@ struct TrackDetailView: View {
         .background(ThemeManager.backgroundColor.ignoresSafeArea())
         .navigationBarTitleDisplayMode(.inline)
         .task {
-            do {
-                if let lyricsData = try await LyricsAPIManager.shared.getLyrics(
-                    artist: trackWithLyrics.artists,
-                    title: trackWithLyrics.title
-                ) {
-                    trackWithLyrics = Track(
-                        id: trackWithLyrics.id,
-                        title: trackWithLyrics.title,
-                        artists: trackWithLyrics.artists,
-                        imageUrl: trackWithLyrics.imageUrl,
-                        lyrics: lyricsData.lines
-                    )
+            // First check cache
+            if let cachedLyrics = LyricsCache.shared.getLyrics(for: trackWithLyrics.id) {
+                print("📝 Found cached lyrics for track: \(trackWithLyrics.title)")
+                trackWithLyrics = Track(
+                    id: trackWithLyrics.id,
+                    title: trackWithLyrics.title,
+                    artists: trackWithLyrics.artists,
+                    imageUrl: trackWithLyrics.imageUrl,
+                    lyrics: cachedLyrics
+                )
+            } else {
+                // If not in cache, fetch from API
+                print("🌐 Fetching lyrics from API for track: \(trackWithLyrics.title)")
+                do {
+                    if let lyricsData = try await LyricsAPIManager.shared.getLyrics(
+                        artist: trackWithLyrics.artists,
+                        title: trackWithLyrics.title
+                    ) {
+                        let lyrics = lyricsData.lines
+                        // Cache the lyrics
+                        LyricsCache.shared.setLyrics(lyrics, for: trackWithLyrics.id)
+                        print("💾 Cached lyrics for track: \(trackWithLyrics.title)")
+                        // Update the track
+                        trackWithLyrics = Track(
+                            id: trackWithLyrics.id,
+                            title: trackWithLyrics.title,
+                            artists: trackWithLyrics.artists,
+                            imageUrl: trackWithLyrics.imageUrl,
+                            lyrics: lyrics
+                        )
+                    }
+                } catch {
+                    self.error = error
+                    print("❌ Failed to fetch lyrics for track: \(trackWithLyrics.title), error: \(error.localizedDescription)")
                 }
-            } catch {
-                self.error = error
             }
         }
         .navigationDestination(isPresented: $showLyrics) {

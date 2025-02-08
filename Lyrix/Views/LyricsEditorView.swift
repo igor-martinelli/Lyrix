@@ -60,13 +60,10 @@ struct LyricsEditorView: View {
                             ForEach(Array(lyrics.enumerated()), id: \.offset) { index, line in
                                 Text(line)
                                     .font(selectedFont)
+                                    .fontWeight(.bold)
                                     .foregroundColor(selectedLines.contains(index) ? .white : .black)
                                     .padding(.vertical, 4)
                                     .padding(.horizontal, 8)
-                                    .background(
-                                        selectedLines.contains(index) ?
-                                        Color.black.opacity(0.3) : Color.clear
-                                    )
                                     .onTapGesture {
                                         if selectedLines.contains(index) {
                                             selectedLines.remove(index)

@@ -15,9 +15,7 @@ class LyricsAPI {
             URLQueryItem(name: "artist_name", value: firstArtist),
             URLQueryItem(name: "track_name", value: title)
         ]
-        
-        print("Fetching lyrics for artist: \(firstArtist), title: \(title)")  // Debug print
-        
+                
         var urlComponents = URLComponents(string: "\(baseURL)/get")
         urlComponents?.queryItems = queryItems
         

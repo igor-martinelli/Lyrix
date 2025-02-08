@@ -73,7 +73,7 @@ struct SplashScreenView: View {
                         Task {
                             async let historyLoad = HistoryStorage.shared.loadHistory()
                             async let cachePrewarm: () = CacheManager.shared.prewarmCache()
-                            async let apiPrewarm: () = APIManager.shared.prewarmConnection()
+                            async let apiPrewarm: () = SpotifyAPIManager.shared.prewarmConnection()
                             
                             // Pre-warm UI systems
                             DispatchQueue.main.async {

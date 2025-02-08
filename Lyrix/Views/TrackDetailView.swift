@@ -9,6 +9,7 @@ import SwiftUI
 
 struct TrackDetailView: View {
     let track: Track
+    @State private var showLyrics = false
     
     var body: some View {
         VStack {
@@ -32,10 +33,27 @@ struct TrackDetailView: View {
                 .foregroundColor(.gray)
                 .padding(.top, 5)
             
+            Button(action: {
+                showLyrics = true
+            }) {
+                Text("Edit Lyrics")
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .padding()
+                    .background(
+                        RoundedRectangle(cornerRadius: 15)
+                            .fill(Color.blue)
+                    )
+            }
+            .padding(.top, 30)
+            
             Spacer()
         }
         .padding()
         .background(ThemeManager.backgroundColor.ignoresSafeArea())
         .navigationBarTitleDisplayMode(.inline)
+        .navigationDestination(isPresented: $showLyrics) {
+            LyricsEditorView(track: track)
+        }
     }
 }

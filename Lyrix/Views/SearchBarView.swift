@@ -8,7 +8,7 @@ struct SearchBarView: View {
     @State private var selectedTrack: Track?  // Store selected track
     
     // Use shared instance instead of creating new one
-    private let apiManager = APIManager.shared
+    private let apiManager = SpotifyAPIManager.shared
 
     
     var body: some View {

@@ -6,6 +6,7 @@ struct HistoryGridView: View {
     let onTrackSelected: (Track) -> Void
     let onTrackDeleted: (Track) -> Void
     @State private var currentPage = 0
+    @State private var opacity: Double = 0  // Start fully transparent
     
     private struct Constants {
         static let rowHeight: CGFloat = 170
@@ -73,6 +74,12 @@ struct HistoryGridView: View {
                 .stroke(ThemeManager.logoColors[logoColorIndex], lineWidth: 1.5)
         )
         .padding()
+        .opacity(opacity)  // Apply opacity
+        .onAppear {
+            withAnimation(.easeIn(duration: 0.3)) {
+                opacity = 1  // Animate to fully opaque
+            }
+        }
     }
 } 
 

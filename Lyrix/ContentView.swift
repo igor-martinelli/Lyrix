@@ -10,6 +10,7 @@ struct ContentView: View {
     @State private var selectedTrack: Track?
     @State private var navigateToDetail = false
     @State private var showSettings = false
+    @State private var historyOpacity = 1.0
     private let presentationManager = SlideInPresentationManager(direction: .right)
 
     init() {
@@ -53,8 +54,23 @@ struct ContentView: View {
                             searchHistory: searchHistory,
                             logoColorIndex: logoColorIndex,
                             onTrackSelected: navigateToTrack,
-                            onTrackDeleted: removeFromSearchHistory
+                            onTrackDeleted: { track in
+                                if searchHistory.count == 1 {
+                                    // Animate fade out if it's the last track
+                                    withAnimation(.easeOut(duration: 0.3)) {
+                                        historyOpacity = 0
+                                    }
+                                    // Remove track after animation
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                        removeFromSearchHistory(track)
+                                        historyOpacity = 1  // Reset opacity for next time
+                                    }
+                                } else {
+                                    removeFromSearchHistory(track)
+                                }
+                            }
                         )
+                        .opacity(historyOpacity)
                         Spacer(minLength: 0)  // Push content up
                     }
                 }

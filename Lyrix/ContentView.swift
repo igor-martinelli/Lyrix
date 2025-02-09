@@ -11,6 +11,7 @@ struct ContentView: View {
     @State private var navigateToDetail = false
     @State private var showSettings = false
     @State private var historyOpacity = 1.0
+    @State private var activeDeleteTrackId: String? = nil
     private let presentationManager = SlideInPresentationManager(direction: .right)
 
     init() {
@@ -19,63 +20,74 @@ struct ContentView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                // Logo
-                LogoView(colorIndex: $logoColorIndex)
-                    .padding(.top, isSearching ? 10 : 80)
-                    .animation(.spring(duration: 0.6), value: isSearching)
-
-                // Search Bar
-                SearchBarView(searchText: $searchText, isSearching: $isSearching, searchResults: $searchResults)
-                    .padding(.top, isSearching ? 10 : 70)
-                
-                // Search Results or History
-                if isSearching && !searchText.isEmpty {
-                    List(searchResults, id: \.id) { track in
-                        Button(action: {
-                            navigateToTrack(track)
-                        }) {
-                            HStack {
-                                TrackRowView(track: track)
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .foregroundColor(.gray)
-                            }
-                            .contentShape(Rectangle())
+            ZStack {
+                Color.clear
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            activeDeleteTrackId = nil
                         }
-                        .buttonStyle(PlainButtonStyle())
-                        .listRowSeparator(.hidden)
                     }
-                    .listStyle(PlainListStyle())
-                } else if !isSearching && !searchHistory.isEmpty {
-                    VStack {
-                        Spacer()
-                        HistoryGridView(
-                            searchHistory: searchHistory,
-                            logoColorIndex: logoColorIndex,
-                            onTrackSelected: navigateToTrack,
-                            onTrackDeleted: { track in
-                                if searchHistory.count == 1 {
-                                    // Animate fade out if it's the last track
-                                    withAnimation(.easeOut(duration: 0.6)) {
-                                        historyOpacity = 0
-                                    }
-                                    // Remove track after animation
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                                        removeFromSearchHistory(track)
-                                        historyOpacity = 1  // Reset opacity for next time
-                                    }
-                                } else {
-                                    removeFromSearchHistory(track)
-                                }
-                            }
-                        )
-                        .opacity(historyOpacity)
-                        Spacer(minLength: 0)  // Push content up
-                    }
-                }
+                
+                VStack(spacing: 0) {
+                    // Logo
+                    LogoView(colorIndex: $logoColorIndex)
+                        .padding(.top, isSearching ? 10 : 80)
+                        .animation(.spring(duration: 0.6), value: isSearching)
 
-                Spacer(minLength: 0)
+                    // Search Bar
+                    SearchBarView(searchText: $searchText, isSearching: $isSearching, searchResults: $searchResults)
+                        .padding(.top, isSearching ? 10 : 70)
+                    
+                    // Search Results or History
+                    if isSearching && !searchText.isEmpty {
+                        List(searchResults, id: \.id) { track in
+                            Button(action: {
+                                navigateToTrack(track)
+                            }) {
+                                HStack {
+                                    TrackRowView(track: track)
+                                    Spacer()
+                                    Image(systemName: "chevron.right")
+                                        .foregroundColor(.gray)
+                                }
+                                .contentShape(Rectangle())
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                            .listRowSeparator(.hidden)
+                        }
+                        .listStyle(PlainListStyle())
+                    } else if !isSearching && !searchHistory.isEmpty {
+                        VStack {
+                            Spacer()
+                            HistoryGridView(
+                                searchHistory: searchHistory,
+                                logoColorIndex: logoColorIndex,
+                                activeDeleteTrackId: $activeDeleteTrackId,
+                                onTrackSelected: navigateToTrack,
+                                onTrackDeleted: { track in
+                                    if searchHistory.count == 1 {
+                                        // Animate fade out if it's the last track
+                                        withAnimation(.easeOut(duration: 0.6)) {
+                                            historyOpacity = 0
+                                        }
+                                        // Remove track after animation
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                                            removeFromSearchHistory(track)
+                                            historyOpacity = 1  // Reset opacity for next time
+                                        }
+                                    } else {
+                                        removeFromSearchHistory(track)
+                                    }
+                                }
+                            )
+                            .opacity(historyOpacity)
+                            Spacer(minLength: 0)  // Push content up
+                        }
+                    }
+
+                    Spacer(minLength: 0)
+                }
             }
             .background(ThemeManager.backgroundColor)
             .navigationDestination(isPresented: $navigateToDetail) {
@@ -98,7 +110,7 @@ struct ContentView: View {
         navigateToDetail = true
         
         // Delay the history update
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {  // 0.3s delay matches the navigation transition
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {  // 0.3s delay matches the navigation transition
             addToSearchHistory(track)
         }
     }

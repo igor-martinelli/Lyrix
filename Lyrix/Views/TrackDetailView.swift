@@ -12,6 +12,8 @@ struct TrackDetailView: View {
     @State private var showLyrics = false
     @State private var error: Error?
     @State private var isLoadingLyrics = true
+    @State private var showLyricsEditor = false
+    @State private var opacity = 0.0  // Start fully transparent
     
     init(track: Track) {
         _trackWithLyrics = State(initialValue: track)
@@ -41,7 +43,7 @@ struct TrackDetailView: View {
             
             VStack(spacing: 8) {
                 Button(action: {
-                    showLyrics = true
+                    showLyricsEditor = true
                 }) {
                     Text("Edit Lyrics")
                         .font(.headline)
@@ -105,7 +107,13 @@ struct TrackDetailView: View {
                 }
             }
         }
-        .navigationDestination(isPresented: $showLyrics) {
+        .opacity(opacity)  // Apply opacity
+        .onAppear {
+            withAnimation(.easeIn(duration: 0.3)) {
+                opacity = 1  // Animate to fully opaque
+            }
+        }
+        .navigationDestination(isPresented: $showLyricsEditor) {
             LyricsEditorView(track: trackWithLyrics)
         }
     }

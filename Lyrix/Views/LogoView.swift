@@ -8,7 +8,7 @@ struct LogoView: View {
             .font(ThemeManager.logoFont(size: 60))
             .foregroundColor(ThemeManager.logoColors[colorIndex])
             .onTapGesture {
-                withAnimation(.spring(duration: 0.3)) {
+                withAnimation(.spring(duration: 0.6)) {
                     colorIndex = (colorIndex + 1) % ThemeManager.logoColors.count
                 }
             }

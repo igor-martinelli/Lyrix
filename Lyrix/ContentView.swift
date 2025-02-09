@@ -23,7 +23,7 @@ struct ContentView: View {
                 // Logo
                 LogoView(colorIndex: $logoColorIndex)
                     .padding(.top, isSearching ? 10 : 80)
-                    .animation(.spring(duration: 0.9), value: isSearching)
+                    .animation(.spring(duration: 0.6), value: isSearching)
 
                 // Search Bar
                 SearchBarView(searchText: $searchText, isSearching: $isSearching, searchResults: $searchResults)
@@ -57,7 +57,7 @@ struct ContentView: View {
                             onTrackDeleted: { track in
                                 if searchHistory.count == 1 {
                                     // Animate fade out if it's the last track
-                                    withAnimation(.easeOut(duration: 0.3)) {
+                                    withAnimation(.easeOut(duration: 0.6)) {
                                         historyOpacity = 0
                                     }
                                     // Remove track after animation
@@ -77,7 +77,6 @@ struct ContentView: View {
 
                 Spacer(minLength: 0)
             }
-            .animation(.spring(duration: 0.5), value: isSearching)
             .background(ThemeManager.backgroundColor)
             .navigationDestination(isPresented: $navigateToDetail) {
                 if let track = selectedTrack {

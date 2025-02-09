@@ -13,10 +13,8 @@ struct SearchBarView: View {
     
     var body: some View {
         Button(action: {
-            withAnimation(.spring(duration: 0.5)) {
-                isSearching = true
-                isFocused = true
-            }
+            isSearching = true
+            isFocused = true
         }) {
             HStack {
                 Image(systemName: "magnifyingglass")
@@ -55,11 +53,8 @@ struct SearchBarView: View {
                 if isSearching {
                     Button(action: {
                         searchResults = []
-                        withAnimation(.spring(duration: 0.15)) {
-                            isSearching = false
-                            isFocused = false
-
-                        }
+                        isSearching = false
+                        isFocused = false
                     }) {
                         Text("Cancel")
                             .font(ThemeManager.bodyFont)
@@ -75,6 +70,6 @@ struct SearchBarView: View {
             .padding(.horizontal)
         }
         .buttonStyle(.plain)
-        .animation(.spring(duration: 0.5), value: isSearching)
+        .animation(.spring(duration: 0.6), value: isSearching)
     }
 }

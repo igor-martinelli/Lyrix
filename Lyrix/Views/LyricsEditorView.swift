@@ -8,6 +8,7 @@ struct LyricsEditorView: View {
     @State private var isFavorite = false
     @Environment(\.dismiss) private var dismiss
     @State private var showingPreview = false
+    @State private var opacity = 0.0  // Add this for fade-in animation
     
     private let colors: [Color] = [
         .red, .blue, .green, .yellow, .purple, .pink, .orange
@@ -79,34 +80,8 @@ struct LyricsEditorView: View {
             
             VStack(spacing: 0) {
                 // Header bar
-                HStack(alignment: .center, spacing: 0) {
-                    Button(action: { dismiss() }) {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(.white)
-                    }
-                    .frame(width: 44)
-                    
-                    Spacer()
-                    
-                    VStack(spacing: 2) {
-                        Text(track.title)
-                            .font(.system(size: 16))
-                            .fontWeight(.bold)
-                        Text(track.artists)
-                            .font(.system(size: 14))
-                            .opacity(0.8)
-                    }
-                    .foregroundColor(.white)
-                    
-                    Spacer()
-                    
-                    Color.clear
-                        .frame(width: 44)
-                }
-                .padding(.horizontal)
-                .frame(height: 60)  // Fixed header height
-                .padding(.bottom, 20)  // Add bottom padding here
+                CustomTopBar(title: track.title, subtitle: track.artists)
+                    .padding(.bottom, 20)
                 
                 // Lyrics content
                 ZStack {
@@ -198,6 +173,13 @@ struct LyricsEditorView: View {
                 }
                 .padding(.vertical, 30)
             }
+            .opacity(opacity)
+            .onAppear {
+                withAnimation(.easeIn(duration: 0.2).delay(0.1)) {  // Added small delay
+                    opacity = 1
+                }
+            }
+            
         }
         .navigationBarHidden(true)
         .sheet(isPresented: $showingPreview) {

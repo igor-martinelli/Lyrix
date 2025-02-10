@@ -14,6 +14,7 @@ struct WallpaperPreviewView: View {
     // Just two main actions
     private let actions = [
         ("Save", "square.and.arrow.down.fill", Color.blue),
+        ("Wallpaper", "photo.fill", Color.purple),
         ("Share", "square.and.arrow.up.fill", Color.green)
     ]
     
@@ -66,26 +67,7 @@ struct WallpaperPreviewView: View {
             Color.black.ignoresSafeArea()
             
             VStack(spacing: 20) {
-                // Header
-                HStack {
-                    Button(action: { dismiss() }) {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 20))
-                            .foregroundColor(.white)
-                    }
-                    
-                    Spacer()
-                    
-                    Text("Share")
-                        .font(.system(size: 18))
-                        .foregroundColor(.white)
-                    
-                    Spacer()
-                    
-                    Color.clear
-                        .frame(width: 20)
-                }
-                .padding()
+                Spacer()
                 
                 // Preview of the actual wallpaper
                 if let image = wallpaperImage {
@@ -124,21 +106,16 @@ struct WallpaperPreviewView: View {
                 .padding(.top, 20)
                 
                 Spacer()
-                
-                // Bottom indicator
-                RoundedRectangle(cornerRadius: 2)
-                    .fill(Color.gray.opacity(0.5))
-                    .frame(width: 40, height: 4)
-                    .padding(.bottom, 10)
             }
         }
         .onAppear {
-            // Generate wallpaper once when view appears
             wallpaperImage = renderWallpaper()
         }
         .sheet(isPresented: $showingShareSheet) {
-            if let image = wallpaperImage {  // Use stored image
+            if let image = wallpaperImage {
                 ShareSheet(items: [image])
+                    .presentationDetents([.medium, .large])
+                    .presentationDragIndicator(.visible)
             }
         }
         .alert("Saved!", isPresented: $showingSaveSuccess) {
@@ -181,6 +158,11 @@ struct WallpaperPreviewView: View {
             checkPhotoLibraryPermissionAndSave(image)
         case "Share":
             showingShareSheet = true
+        case "Wallpaper":
+            // Open iOS wallpaper settings
+            if let url = URL(string: "App-prefs:root=Wallpaper") {
+                UIApplication.shared.open(url)
+            }
         default:
             break
         }
@@ -235,13 +217,30 @@ struct WallpaperPreviewView: View {
     }
 }
 
-// Helper view for system share sheet
+// Keep just the ShareSheet struct for the native iOS share sheet
 struct ShareSheet: UIViewControllerRepresentable {
     let items: [Any]
     
     func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: items, applicationActivities: nil)
+        let controller = UIActivityViewController(
+            activityItems: items,
+            applicationActivities: nil
+        )
+        return controller
     }
     
     func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
+}
+
+// Helper view to make background transparent
+struct ClearBackgroundView: UIViewRepresentable {
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView()
+        DispatchQueue.main.async {
+            view.superview?.superview?.backgroundColor = .clear
+        }
+        return view
+    }
+    
+    func updateUIView(_ uiView: UIView, context: Context) {}
 } 

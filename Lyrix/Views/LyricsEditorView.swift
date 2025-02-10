@@ -173,12 +173,7 @@ struct LyricsEditorView: View {
                 }
                 .padding(.vertical, 30)
             }
-            .opacity(opacity)
-            .onAppear {
-                withAnimation(.easeIn(duration: 0.2).delay(0.1)) {  // Added small delay
-                    opacity = 1
-                }
-            }
+            
             
         }
         .navigationBarHidden(true)
@@ -188,6 +183,8 @@ struct LyricsEditorView: View {
                 selectedLines: selectedLyrics,
                 backgroundColor: selectedColor
             )
+            .presentationDetents([.large])  // Always full screen
+            .presentationDragIndicator(.visible)
         }
     }
 } 

@@ -10,11 +10,11 @@ struct WallpaperPreviewView: View {
     @State private var showingSaveSuccess = false
     @State private var wallpaperImage: UIImage?
     @State private var showingPermissionAlert = false
+    @State private var saveCompleted = false
     
     // Just two main actions
     private let actions = [
         ("Save", "square.and.arrow.down.fill", Color.blue),
-        ("Wallpaper", "photo.fill", Color.purple),
         ("Share", "square.and.arrow.up.fill", Color.green)
     ]
     
@@ -35,7 +35,7 @@ struct WallpaperPreviewView: View {
                                 .foregroundColor(.white)
                                 .tracking(-0.6)
                                 .padding(.horizontal, 5)
-                                .frame(maxWidth: geometry.size.width - 32, alignment: .leading)  // Match editor's width (padding of 16 on each side)
+                                .frame(maxWidth: geometry.size.width - 32, alignment: .leading)
                                 .fixedSize(horizontal: false, vertical: true)
                                 .lineLimit(nil)
                                 .multilineTextAlignment(.leading)
@@ -43,6 +43,7 @@ struct WallpaperPreviewView: View {
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, 16)
+                    .padding(.top, 120)  // Add padding here to move lyrics down
                     
                     Spacer()
                     
@@ -71,13 +72,28 @@ struct WallpaperPreviewView: View {
                 
                 // Preview of the actual wallpaper
                 if let image = wallpaperImage {
-                    Image(uiImage: image)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(height: UIScreen.main.bounds.height * 0.6)
-                        .cornerRadius(20)
-                        .shadow(color: .black.opacity(0.3), radius: 10)
-                        .padding(.horizontal)
+                    ZStack {
+                        Image(uiImage: image)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(height: UIScreen.main.bounds.height * 0.6)
+                            .cornerRadius(20)
+                            .shadow(color: .black.opacity(0.3), radius: 10)
+                            .padding(.horizontal)
+                        
+                        // Saved overlay
+                        if saveCompleted {
+                            Color.black.opacity(0.7)
+                                .cornerRadius(20)
+                                .overlay(
+                                    Text("Saved")
+                                        .font(.system(size: 24, weight: .bold))
+                                        .foregroundColor(.white)
+                                )
+                                .transition(.opacity)
+                        }
+                    }
+                    .frame(height: UIScreen.main.bounds.height * 0.6)  // Add fixed frame to ZStack
                 }
                 
                 // Action buttons
@@ -91,9 +107,20 @@ struct WallpaperPreviewView: View {
                                     .fill(action.2)
                                     .frame(width: 58, height: 58)
                                     .overlay(
-                                        Image(systemName: action.1)
-                                            .font(.system(size: 24))
-                                            .foregroundColor(.white)
+                                        Group {
+                                            if action.0 == "Save" && saveCompleted {
+                                                Image(systemName: "checkmark")
+                                                    .font(.system(size: 24))
+                                                    .foregroundColor(.white)
+                                                    .transition(.scale.combined(with: .opacity))
+                                            } else {
+                                                Image(systemName: action.1)
+                                                    .font(.system(size: 24))
+                                                    .foregroundColor(.white)
+                                                    .transition(.scale.combined(with: .opacity))
+                                            }
+                                        }
+                                        .animation(.spring(), value: saveCompleted)
                                     )
                             }
                             
@@ -117,11 +144,6 @@ struct WallpaperPreviewView: View {
                     .presentationDetents([.medium, .large])
                     .presentationDragIndicator(.visible)
             }
-        }
-        .alert("Saved!", isPresented: $showingSaveSuccess) {
-            Button("OK", role: .cancel) { }
-        } message: {
-            Text("Wallpaper has been saved to your photo library")
         }
         .alert("Photo Library Access", isPresented: $showingPermissionAlert) {
             Button("Open Settings", action: openSettings)
@@ -158,11 +180,6 @@ struct WallpaperPreviewView: View {
             checkPhotoLibraryPermissionAndSave(image)
         case "Share":
             showingShareSheet = true
-        case "Wallpaper":
-            // Open iOS wallpaper settings
-            if let url = URL(string: "App-prefs:root=Wallpaper") {
-                UIApplication.shared.open(url)
-            }
         default:
             break
         }
@@ -197,7 +214,15 @@ struct WallpaperPreviewView: View {
         } completionHandler: { success, error in
             DispatchQueue.main.async {
                 if success {
-                    showingSaveSuccess = true
+                    withAnimation {
+                        saveCompleted = true
+                    }
+                    // Reset after a delay
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                        withAnimation {
+                            saveCompleted = false
+                        }
+                    }
                 }
             }
         }
@@ -217,30 +242,16 @@ struct WallpaperPreviewView: View {
     }
 }
 
-// Keep just the ShareSheet struct for the native iOS share sheet
+// Simplify ShareSheet back to its basic form
 struct ShareSheet: UIViewControllerRepresentable {
     let items: [Any]
     
     func makeUIViewController(context: Context) -> UIActivityViewController {
-        let controller = UIActivityViewController(
+        UIActivityViewController(
             activityItems: items,
             applicationActivities: nil
         )
-        return controller
     }
     
     func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
-}
-
-// Helper view to make background transparent
-struct ClearBackgroundView: UIViewRepresentable {
-    func makeUIView(context: Context) -> UIView {
-        let view = UIView()
-        DispatchQueue.main.async {
-            view.superview?.superview?.backgroundColor = .clear
-        }
-        return view
-    }
-    
-    func updateUIView(_ uiView: UIView, context: Context) {}
 } 

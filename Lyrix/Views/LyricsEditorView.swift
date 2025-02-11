@@ -177,6 +177,14 @@ struct LyricsEditorView: View {
             
         }
         .navigationBarHidden(true)
+        .gesture(
+            DragGesture(minimumDistance: 20)
+                .onEnded { value in
+                    if value.startLocation.x < 50 && value.translation.width > 100 {
+                        dismiss()
+                    }
+                }
+        )
         .sheet(isPresented: $showingPreview) {
             WallpaperPreviewView(
                 track: track,
@@ -185,6 +193,11 @@ struct LyricsEditorView: View {
             )
             .presentationDetents([.large])  // Always full screen
             .presentationDragIndicator(.visible)
+        }
+        .onAppear {
+            withAnimation(.easeIn(duration: 0.5)) {
+                opacity = 1  // Animate to fully opaque
+            }
         }
     }
 } 

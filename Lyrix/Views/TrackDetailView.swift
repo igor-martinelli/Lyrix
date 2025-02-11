@@ -75,6 +75,15 @@ struct TrackDetailView: View {
         }
         .background(ThemeManager.backgroundColor.ignoresSafeArea())
         .navigationBarHidden(true)  // Hide navigation bar completely
+        .gesture(
+            DragGesture(minimumDistance: 20)
+                .onEnded { value in
+                    // Check if the drag starts near the left edge and is moved far enough
+                    if value.startLocation.x < 50 && value.translation.width > 100 {
+                        dismiss()
+                    }
+                }
+        )
         .task {
             // First check cache
             if let cachedLyrics = LyricsCache.shared.getLyrics(for: trackWithLyrics.id) {

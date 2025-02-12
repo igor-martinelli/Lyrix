@@ -8,10 +8,23 @@ struct SplashScreenView: View {
     @State private var dummyTap = false  // For gesture pre-warming
     @State private var dummyScroll = 0.0  // For scroll pre-warming
     @State private var dummyNav = false   // For navigation pre-warming
+    @State private var showTutorial: Bool = {
+        // If the key doesn't exist yet, return true to show tutorial
+        if !UserDefaults.standard.bool(forKey: "hasSeenTutorialKey") {
+            return true
+        }
+        return false
+    }()
     
     var body: some View {
         if isActive {
-            ContentView()
+            if showTutorial {
+                TutorialView(showTutorial: $showTutorial)
+                    .transition(.opacity)
+            } else {
+                ContentView()
+                    .transition(.opacity)
+            }
         } else {
             ZStack {
                 Color.black.ignoresSafeArea()

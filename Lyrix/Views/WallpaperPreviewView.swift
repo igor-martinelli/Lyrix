@@ -57,7 +57,7 @@ struct WallpaperPreviewView: View {
                             .opacity(0.8)
                     }
                     .foregroundColor(.white)
-                    .padding(.bottom, 50)
+                    .padding(.bottom, 95)  
                 }
             }
         }

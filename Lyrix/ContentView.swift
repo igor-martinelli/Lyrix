@@ -24,20 +24,27 @@ struct ContentView: View {
                 Color.clear
                     .contentShape(Rectangle())
                     .onTapGesture {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            activeDeleteTrackId = nil
+                        if activeDeleteTrackId != nil {
+                            withAnimation(AnimationConstants.easeOut) {
+                                activeDeleteTrackId = nil
+                            }
                         }
                     }
                 
                 VStack(spacing: 0) {
                     // Logo
-                    LogoView(colorIndex: $logoColorIndex)
-                        .padding(.top, isSearching ? 10 : 80)
-                        .animation(.spring(duration: 0.6), value: isSearching)
+                    LogoView(colorIndex: $logoColorIndex, activeDeleteTrackId: $activeDeleteTrackId, isSearching: isSearching)
+                        .padding(.top, isSearching ? 0 : 70)
 
                     // Search Bar
-                    SearchBarView(searchText: $searchText, isSearching: $isSearching, searchResults: $searchResults)
-                        .padding(.top, isSearching ? 10 : 70)
+                    SearchBarView(
+                        searchText: $searchText, 
+                        isSearching: $isSearching, 
+                        searchResults: $searchResults,
+                        activeDeleteTrackId: $activeDeleteTrackId,
+                        animation: AnimationConstants.standard
+                    )
+                    .padding(.top, isSearching ? 20 : 70)
                     
                     // Search Results or History
                     if isSearching && !searchText.isEmpty {
@@ -68,7 +75,7 @@ struct ContentView: View {
                                 onTrackDeleted: { track in
                                     if searchHistory.count == 1 {
                                         // Animate fade out if it's the last track
-                                        withAnimation(.easeOut(duration: 0.6)) {
+                                        withAnimation(AnimationConstants.easeOut) {
                                             historyOpacity = 0
                                         }
                                         // Remove track after animation
@@ -96,10 +103,24 @@ struct ContentView: View {
                 }
             }
             .navigationBarItems(trailing: Button(action: {
+                // Dismiss any active delete mode
+                if activeDeleteTrackId != nil {
+                    withAnimation(AnimationConstants.easeOut) {
+                        activeDeleteTrackId = nil
+                    }
+                    return  // Don't open settings if we're dismissing delete mode
+                }
+                
+                // Original action
                 presentSettings()
             }) {
                 Image(systemName: "gearshape")
             }).foregroundColor(ThemeManager.logoColors[logoColorIndex])
+            .onChange(of: isSearching) { oldValue, newValue in
+                withAnimation(AnimationConstants.standard) {
+                    // Do nothing, just trigger animation
+                }
+            }
         }
         .preferredColorScheme(.dark)
     }

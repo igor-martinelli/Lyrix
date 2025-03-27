@@ -102,7 +102,7 @@ struct TrackHistoryCell: View {
     let onLongPress: (Bool) -> Void
     let onTap: () -> Void
     @GestureState private var isDetectingLongPress = false
-    @State private var rotationAngle: Double = 0  // Change from shakeOffset to rotationAngle
+    @State private var rotationAngle: Double = 0
     
     private struct Constants {
         static let imageSize: CGFloat = 80
@@ -117,7 +117,7 @@ struct TrackHistoryCell: View {
                         .frame(width: Constants.imageSize, height: Constants.imageSize)
                         .cornerRadius(8)
                         .opacity(isShowingDelete ? 0.5 : 1.0)
-                        .rotationEffect(.degrees(rotationAngle))  // Use rotation instead of offset
+                        .rotationEffect(.degrees(rotationAngle))
                         .onChange(of: isShowingDelete) { oldValue, newValue in
                             if newValue {
                                 // Trigger rotation animation when bin appears
@@ -147,8 +147,10 @@ struct TrackHistoryCell: View {
                             .background(Circle().fill(.black).opacity(0.6))
                             .shadow(radius: 2)
                     }
+                    .zIndex(10) // Ensure the delete button is on top
                 }
             }
+            .contentShape(Rectangle())
             .gesture(
                 LongPressGesture(minimumDuration: 0.5)
                     .updating($isDetectingLongPress) { currentState, gestureState, _ in
@@ -169,7 +171,6 @@ struct TrackHistoryCell: View {
                 .truncationMode(.tail)
                 .frame(width: Constants.imageSize, alignment: .center)
                 .opacity(isShowingDelete ? 0.5 : 1.0)
-            
         }
         .frame(height: Constants.cellHeight)
     }

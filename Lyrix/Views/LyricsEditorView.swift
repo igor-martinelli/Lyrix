@@ -4,11 +4,11 @@ struct LyricsEditorView: View {
     let track: Track
     @State private var selectedLines: Set<Int> = []
     @State private var selectedColor: Color = .red
-    @State private var selectedFont: Font = .system(size: 24)
+    @State private var selectedFont: Font = .system(size: 23)
     @State private var isFavorite = false
     @Environment(\.dismiss) private var dismiss
     @State private var showingPreview = false
-    @State private var opacity = 0.0  // Add this for fade-in animation
+    @State private var opacity = 0.0  // For fade-in animation
     
     private let colors: [Color] = [
         .red, .blue, .green, .yellow, .purple, .pink, .orange
@@ -60,18 +60,35 @@ struct LyricsEditorView: View {
                 }
             }
         }
-        
-        // Debug print
-        print("📝 Selected lines (sorted): \(selectedLines.sorted())")
-        print("📍 Clicked line index: \(index)")
-        if !selectedLines.isEmpty {
-            print("🔄 Range: \(selectedLines.min()!) to \(selectedLines.max()!)")
-        }
-        print("-------------------")
     }
     
     var selectedLyrics: [String] {
         selectedLines.sorted().map { track.lyrics[$0] }
+    }
+    
+    // Simplified color picker
+    private var colorPickerView: some View {
+        HStack(spacing: 12) {
+            ForEach(colors, id: \.self) { color in
+                Circle()
+                    .fill(color)
+                    .frame(width: 24, height: 24)
+                    .overlay(
+                        Circle()
+                            .stroke(Color.white, lineWidth: color == selectedColor ? 2 : 0)
+                    )
+                    .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
+                    .onTapGesture {
+                        selectedColor = color
+                    }
+            }
+        }
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color.black.opacity(0.1))
+                .frame(width: CGFloat(colors.count) * 24 + CGFloat(colors.count - 1) * 12 + 32)
+                .frame(height: 48)
+        )
     }
     
     var body: some View {
@@ -95,7 +112,7 @@ struct LyricsEditorView: View {
                                     .fontWeight(.bold)
                                     .foregroundColor(isLineSelected(index) ? .white : .black)
                                     .tracking(-0.6)
-                                    .padding(.horizontal, 5)
+                                    .padding(.horizontal, 10)    
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .fixedSize(horizontal: false, vertical: true)
                                     .lineLimit(nil)
@@ -132,32 +149,12 @@ struct LyricsEditorView: View {
                 
                 // Color picker toolbar
                 HStack(spacing: 20) {
-                    HStack(spacing: 12) {
-                        ForEach(colors, id: \.self) { color in
-                            Circle()
-                                .fill(color)
-                                .frame(width: 24, height: 24)
-                                .overlay(
-                                    Circle()
-                                        .stroke(Color.white, lineWidth: color == selectedColor ? 2 : 0)
-                                )
-                                .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
-                                .onTapGesture {
-                                    withAnimation(.easeInOut(duration: 0.2)) {
-                                        selectedColor = color
-                                    }
-                                }
-                        }
-                    }
-                    .background(
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(Color.black.opacity(0.1))
-                            .frame(width: CGFloat(colors.count) * 24 + CGFloat(colors.count - 1) * 12 + 32)
-                            .frame(height: 48)
-                    )
+                    colorPickerView
                     
                     Button(action: {
-                        showingPreview = true
+                        if !selectedLines.isEmpty {
+                            showingPreview = true
+                        }
                     }) {
                         Image(systemName: "checkmark")
                             .font(.system(size: 25, weight: .bold))
@@ -170,11 +167,12 @@ struct LyricsEditorView: View {
                             )
                     }
                     .padding(.leading, 20)
+                    .opacity(selectedLines.isEmpty ? 0.4 : 1.0)
+                    .disabled(selectedLines.isEmpty)
+                    .animation(AnimationConstants.standard, value: selectedLines.isEmpty)
                 }
                 .padding(.vertical, 30)
             }
-            
-            
         }
         .navigationBarHidden(true)
         .gesture(

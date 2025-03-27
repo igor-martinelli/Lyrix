@@ -4,7 +4,9 @@ struct SearchBarView: View {
     @Binding var searchText: String
     @Binding var isSearching: Bool
     @Binding var searchResults: [Track]
+    @Binding var activeDeleteTrackId: String?
     @FocusState private var isFocused: Bool
+    var animation: Animation? = nil  // Add this parameter
     @State private var selectedTrack: Track?  // Store selected track
     
     // Use shared instance instead of creating new one
@@ -13,7 +15,17 @@ struct SearchBarView: View {
     
     var body: some View {
         Button(action: {
-            isSearching = true
+            // Dismiss any active delete mode
+            if activeDeleteTrackId != nil {
+                withAnimation(AnimationConstants.easeOut) {
+                    activeDeleteTrackId = nil
+                }
+            }
+            
+            // Use the passed animation for state changes
+            withAnimation(animation) {
+                isSearching = true
+            }
             isFocused = true
         }) {
             HStack {
@@ -52,9 +64,11 @@ struct SearchBarView: View {
                 
                 if isSearching {
                     Button(action: {
-                        searchResults = []
-                        isSearching = false
-                        isFocused = false
+                        withAnimation(animation) {
+                            searchResults = []
+                            isSearching = false
+                            isFocused = false
+                        }
                     }) {
                         Text("Cancel")
                             .font(ThemeManager.bodyFont)
@@ -70,6 +84,5 @@ struct SearchBarView: View {
             .padding(.horizontal)
         }
         .buttonStyle(.plain)
-        .animation(.spring(duration: 0.6), value: isSearching)
     }
 }

@@ -25,19 +25,19 @@ jobs:
                    -derivedDataPath build \
                    clean build
 
-    - name: Find and Zip .app Bundle
+    - name: Package .app directly for Appetize
       run: |
         APP_PATH=$(find build -name "Lyrix.app" -type d | head -n 1)
         if [ -z "$APP_PATH" ]; then
           echo "Lyrix.app not found!"
           exit 1
         fi
-        cd "$(dirname "$APP_PATH")"
-        zip -r Lyrix.app.zip Lyrix.app
-        echo "Zipped app located at: $(pwd)/Lyrix.app.zip"
+        echo "Found app at: $APP_PATH"
+        cp -R "$APP_PATH" ./Lyrix.app
+        zip -r appetize-build.zip Lyrix.app
 
-    - name: Upload .app as Artifact
+    - name: Upload Zip Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: Appetize-Simulator-Build
-        path: build/**/Lyrix.app.zip
+        name: Lyrix-Appetize-Direct
+        path: appetize-build.zip

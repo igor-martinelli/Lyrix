@@ -1,4 +1,4 @@
-name: Build Simulator App
+name: Build IPA for Sideloading
 
 on:
   push:
@@ -18,26 +18,25 @@ jobs:
       with:
         xcode-version: latest-stable
 
-    - name: Build for iOS Simulator
+    - name: Build Unsigned iOS Archive
       run: |
         xcodebuild -scheme "Lyrix" \
-                   -sdk iphonesimulator \
+                   -sdk iphoneos \
+                   -configuration Release \
                    -derivedDataPath build \
+                   CODE_SIGNING_ALLOWED=NO \
+                   CODE_SIGNING_REQUIRED=NO \
                    clean build
 
-    - name: Package .app directly for Appetize
+    - name: Package .ipa File
       run: |
         APP_PATH=$(find build -name "Lyrix.app" -type d | head -n 1)
-        if [ -z "$APP_PATH" ]; then
-          echo "Lyrix.app not found!"
-          exit 1
-        fi
-        echo "Found app at: $APP_PATH"
-        cp -R "$APP_PATH" ./Lyrix.app
-        zip -r appetize-build.zip Lyrix.app
+        mkdir -p Payload
+        cp -R "$APP_PATH" Payload/
+        zip -r Lyrix.ipa Payload
 
-    - name: Upload Zip Artifact
+    - name: Upload .ipa Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: Lyrix-Appetize-Direct
-        path: appetize-build.zip
+        name: Lyrix-Sideload-IPA
+        path: Lyrix.ipa

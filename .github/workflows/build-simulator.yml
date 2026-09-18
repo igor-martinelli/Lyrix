@@ -22,17 +22,22 @@ jobs:
       run: |
         xcodebuild -scheme "Lyrix" \
                    -sdk iphonesimulator \
-                   -configuration Release \
                    -derivedDataPath build \
                    clean build
 
-    - name: Zip .app Bundle
+    - name: Find and Zip .app Bundle
       run: |
-        cd build/Build/Products/Release-iphonesimulator/
-        zip -r YourApp.app.zip *.app
+        APP_PATH=$(find build -name "Lyrix.app" -type d | head -n 1)
+        if [ -z "$APP_PATH" ]; then
+          echo "Lyrix.app not found!"
+          exit 1
+        fi
+        cd "$(dirname "$APP_PATH")"
+        zip -r Lyrix.app.zip Lyrix.app
+        echo "Zipped app located at: $(pwd)/Lyrix.app.zip"
 
     - name: Upload .app as Artifact
       uses: actions/upload-artifact@v4
       with:
         name: Appetize-Simulator-Build
-        path: build/Build/Products/Release-iphonesimulator/Lyrix.app.zip
+        path: build/**/Lyrix.app.zip

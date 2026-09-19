@@ -1,8 +1,8 @@
 import Foundation
 
 class SpotifyAPI {
-    private let clientID = "84093ed5893243aa99b808d2efa3525f"
-    private let clientSecret = "872bb41d512d4469af2ab72d35eb3524"
+    private let clientID = "ClientID"
+    private let clientSecret = "ClientSecret"
     private let tokenURL = "https://accounts.spotify.com/api/token"
     private let searchURL = "https://api.spotify.com/v1/search"
 
